@@ -45,7 +45,8 @@ polkit-gnome
 xcursor-vanilla-dmz
 firefox
 firefox-i18n-fr
-git gtk-engine-murrine
+git
+gtk-engine-murrine
 gtk-engines
 gvfs
 networkmanager
