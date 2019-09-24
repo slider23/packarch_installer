@@ -1,0 +1,10 @@
+nvidia
+nvidia-settings
+amd-ucode
+qtcreator
+qt5-translations
+gimp
+libreoffice-fresh
+libreoffice-fresh-fr
+virtualbox
+virtualbox-host-modules-arch

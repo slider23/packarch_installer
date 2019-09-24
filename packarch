@@ -1,0 +1,136 @@
+#!/bin/bash
+
+# Arch Linux Fast Install - Быстрая установка Arch Linux https://github.com/ordanax/arch2018
+# Цель скрипта - быстрое развертывание системы с вашими персональными настройками (конфиг XFCE, темы, программы и т.д.).
+
+# В разработке принимали участие:
+# Алексей Бойко https://vk.com/ordanax
+# Степан Скрябин https://vk.com/zurg3
+# Михаил Сарвилин https://vk.com/michael170707
+# Данил Антошкин https://vk.com/danil.antoshkin
+# Юрий Порунцов https://vk.com/poruncov
+
+red=`tput setaf 1`
+green=`tput setaf 2`
+reset=`tput sgr0`
+
+echo "${red}Installation ArchLinux"
+echo "Ce script installe Archlinux et Xfce en configuration francaise"
+echo "sur les partitions sda1 pour boot, sda2 pour root et sda3 pour home${reset}"
+
+echo "${green}Augmentation de la partition cowspace${reset}"
+mount -o remount,size=2G /run/archiso/cowspace
+loadkeys fr
+timedatectl set-ntp true
+#setfont fr-latin9
+
+read -p "hostname: " hostname
+read -p "username: " username
+
+echo "Machine virtuelle ?"
+read -p "1 - oui, 0 - non: " vm_setting
+
+echo "${green}Formatage des partitions${reset}"
+mkfs.ext4  /dev/sda1 -L boot
+mkfs.ext4  /dev/sda2 -L root
+#mkswap /dev/sda3 -L swap
+mkfs.ext4  /dev/sda3 -L home
+
+echo "${green}Montage des partitions${reset}"
+mount /dev/sda2 /mnt
+mkdir /mnt/{boot,home}
+mount /dev/sda1 /mnt/boot
+#swapon /dev/sda3
+mount /dev/sda3 /mnt/home
+
+echo "${green}4- Ajout des miroirs ${reset}"
+echo "Server = https://mir.archlinux.fr/\$repo/os/\$arch" > /etc/pacman.d/mirrorlist
+echo "Server = http://archlinux.polymorf.fr/\$repo/os/\$arch" >> /etc/pacman.d/mirrorlist
+echo "Server = http://archlinux.mirrors.ovh.net/archlinux/\$repo/os/\$arch" >> /etc/pacman.d/mirrorlist
+echo "Server = http://mirror.archlinux.ikoula.com/archlinux/\$repo/os/\$arch" >> /etc/pacman.d/mirrorlist
+echo "Server = http://mirrors.standaloneinstaller.com/archlinux/\$repo/os/\$arch" >> /etc/pacman.d/mirrorlist
+
+echo "${green}Installation base et base-devel${reset}"
+pacstrap /mnt base base-devel
+
+echo "${green}Generation fstab${reset}"
+genfstab -pU /mnt >> /mnt/etc/fstab
+
+arch-chroot /mnt sh -c 'echo '$hostname' > /etc/hostname'
+arch-chroot /mnt rm -f /etc/hosts
+arch-chroot /mnt sh -c "echo "127.0.0.1		localhost" >> /etc/hosts"
+arch-chroot /mnt sh -c "echo "::1		    localhost" >> /etc/hosts"
+arch-chroot /mnt sh -c "echo "127.0.1.1		"$hostname".localdomain "'$hostname' >> /etc/hosts"
+arch-chroot /mnt ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime
+echo "${green}Edition de locale.gen${reset}"
+arch-chroot /mnt sh -c 'echo "fr_FR.UTF-8 UTF-8" > /etc/locale.gen'
+echo "${green}Generation locales${reset}"
+arch-chroot /mnt locale-gen
+echo "${green}Synchronisation horloge${reset}"
+arch-chroot /mnt hwclock --systohc --utc
+arch-chroot /mnt sh -c "echo "LANG=fr_FR.UTF-8" > /etc/locale.conf"
+arch-chroot /mnt sh -c "echo "KEYMAP=fr" > /etc/vconsole.conf"
+arch-chroot /mnt sh -c "echo "FONT=ter-v16n" >> /etc/vconsole.conf"
+arch-chroot /mnt mkinitcpio -p linux
+arch-chroot /mnt pacman -Syy
+arch-chroot /mnt pacman -S grub --noconfirm
+arch-chroot /mnt grub-install /dev/sda
+arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+
+#arch-chroot /mnt sh -c useradd -m l31rb4g
+echo 'Root password'
+arch-chroot /mnt passwd
+arch-chroot /mnt sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers'
+
+if [[ $vm_setting == 0 ]]; then
+  gui_install='real_install_pkg.txt'
+
+elif [[ $vm_setting == 1 ]]; then
+  gui_install='virtual_machine_pkg.txt'
+fi
+
+arch-chroot /mnt pacman -S - < $gui_install --noconfirm
+arch-chroot /mnt pacman -S - < common_pkg.txt --noconfirm
+arch-chroot /mnt systemctl enable lightdm.service
+arch-chroot /mnt systemctl enable NetworkManager
+arch-chroot /mnt systemctl enable ntpd.service
+arch-chroot /mnt useradd -m -g users -G "adm,audio,floppy,log,network,rfkill,scanner,storage,optical,power,wheel" -s /bin/bash $username
+echo Password pour $username
+arch-chroot /mnt passwd $username
+arch-chroot /mnt systemctl set-default -f graphical.target
+# installing yay
+arch-chroot /mnt wget -q -4 --no-check-certificate -O /usr/bin/makepkg https://raw.githubusercontent.com/Antidote1911/packarch/master/airootfs/usr/bin/makepkg
+arch-chroot /mnt sh -c "cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm"
+#arch-chroot /mnt rm -rf /home/antidote/yay_tmp_install
+arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-aur
+arch-chroot /mnt sudo -u $username yay -S --noconfirm imagewriter
+arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-icon-theme-git
+arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-circle-icon-theme-git
+arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-folders-git
+arch-chroot /mnt sudo -u $username yay -S --noconfirm libgksu
+arch-chroot /mnt sudo -u $username yay -S --noconfirm gksu
+arch-chroot /mnt sudo -u $username yay -S --noconfirm fetchmirrors
+arch-chroot /mnt gpg --recv-keys 1C61A2656FB57B7E4DE0F4C1FC918B335044912E
+arch-chroot /mnt sudo -u $username yay -S --noconfirm dropbox
+arch-chroot /mnt gpg --recv-keys 2EBF997C15BDA244B6EBF5D84773BD5E130D1D45
+arch-chroot /mnt sudo -u $username yay -S --noconfirm spotify
+#######################################
+arch-chroot /mnt git clone https://github.com/Antidote1911/packarch.git
+arch-chroot /mnt cp -r /packarch/airootfs/usr/share/backgrounds/packarch /usr/share/backgrounds
+arch-chroot /mnt cp -r /packarch/airootfs/usr/share/pixmaps/packarch-icon.png /usr/share/pixmaps/packarch-icon.png
+arch-chroot /mnt cp -r /packarch/airootfs/etc/X11/xorg.conf.d/00-keyboard.conf /etc/X11/xorg.conf.d/00-keyboard.conf
+# arch-chroot /mnt rm -rf /home/antidote/.config
+# arch-chroot /mnt rm -rf /home/antidote/.local
+arch-chroot /mnt tar -xf /packarch/config.tar.xz -C /home/$username/
+arch-chroot /mnt rm -r packarch
+arch-chroot /mnt xdg-user-dirs-update
+echo "${green}Configuration de lightdm${reset}"
+arch-chroot /mnt sh -c 'sed -i "s/#greeter-session=example-gtk-gnome.*/greeter-session=lightdm-gtk-greeter/g" /etc/lightdm/lightdm.conf'
+arch-chroot /mnt sh -c 'echo "[greeter]" > /etc/lightdm/lightdm-gtk-greeter.conf'
+arch-chroot /mnt sh -c 'echo "theme-name = Arc-Dark" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+arch-chroot /mnt sh -c 'echo "icon-theme-name = Numix-Circle" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+arch-chroot /mnt sh -c 'echo "background = /usr/share/backgrounds/packarch/Black-Wallpaper-For-PC.jpg" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+arch-chroot /mnt sh -c 'echo "default-user-image = /usr/share/pixmaps/packarch-icon.png" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+arch-chroot /mnt sh -c 'echo "user-background = false" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+arch-chroot /mnt sh -c 'echo "screensaver-timeout = 0" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+exit
