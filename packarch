@@ -97,8 +97,7 @@ arch-chroot /mnt sh -c "cd ~ && git clone https://aur.archlinux.org/yay.git && c
 
 arch-chroot /mnt git clone https://github.com/Antidote1911/packarch.git
 arch-chroot /mnt mkdir /usr/share/backgrounds
-arch-chroot /mnt mkdir /usr/share/backgrounds/packarch
-arch-chroot /mnt cp -r /packarch/airootfs/usr/share/backgrounds/packarch/* /usr/share/backgrounds/packarch
+arch-chroot /mnt cp -r /packarch/airootfs/usr/share/backgrounds/packarch /usr/share/backgrounds
 arch-chroot /mnt cp -r /packarch/airootfs/usr/share/pixmaps/packarch-icon.png /usr/share/pixmaps/packarch-icon.png
 arch-chroot /mnt cp -r /packarch/airootfs/etc/X11/xorg.conf.d/00-keyboard.conf /etc/X11/xorg.conf.d/00-keyboard.conf
 
