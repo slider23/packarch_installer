@@ -81,6 +81,10 @@ echo Password pour $username
 arch-chroot /mnt passwd $username
 arch-chroot /mnt systemctl set-default -f graphical.target
 
+########## Xorg and common packages ###########
+echo "${green}Installation des paquets communs${reset}"
+arch-chroot /mnt pacman -S - < common_pkg.txt --noconfirm
+
 # installing yay
 arch-chroot /mnt wget -q -4 --no-check-certificate -O /usr/bin/makepkg https://raw.githubusercontent.com/Antidote1911/packarch/master/airootfs/usr/bin/makepkg
 arch-chroot /mnt sh -c "cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm"
@@ -89,10 +93,6 @@ arch-chroot /mnt git clone https://github.com/Antidote1911/packarch.git
 arch-chroot /mnt cp -r /packarch/airootfs/usr/share/backgrounds/packarch /usr/share/backgrounds
 arch-chroot /mnt cp -r /packarch/airootfs/usr/share/pixmaps/packarch-icon.png /usr/share/pixmaps/packarch-icon.png
 arch-chroot /mnt cp -r /packarch/airootfs/etc/X11/xorg.conf.d/00-keyboard.conf /etc/X11/xorg.conf.d/00-keyboard.conf
-
-########## Xorg and common packages ###########
-echo "${green}Installation des paquets communs${reset}"
-arch-chroot /mnt pacman -S - < common_pkg.txt --noconfirm
 
 if [[ $desktop_setting == 0 ]]; then
   echo "${green}Installation des paquets Xfce Antidote${reset}"
