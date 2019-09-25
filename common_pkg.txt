@@ -56,3 +56,4 @@ lightdm-gtk-greeter-settings
 xdg-user-dirs
 alsa-utils
 pulseaudio-alsa
+ntfs-3g
