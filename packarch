@@ -18,7 +18,11 @@ timedatectl set-ntp true
 #setfont fr-latin9
 
 read -p "hostname: " hostname
+read -p "Root Password: " root_pass
+##########################################
 read -p "username: " username
+read -p "$username Password: " user_pass
+##########################################
 
 echo "Machine virtuelle ?"
 read -p "0 - oui, 1 - non: " vm_setting
@@ -74,11 +78,13 @@ arch-chroot /mnt grub-install /dev/sda
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
 echo 'Root password'
-arch-chroot /mnt passwd
+#arch-chroot /mnt passwd
+arch-chroot /mnt sh -c 'echo "root:'$root_pass'" | chpasswd'
 arch-chroot /mnt sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers'
 arch-chroot /mnt useradd -m -g users -G "adm,audio,floppy,log,network,rfkill,scanner,storage,optical,power,wheel" -s /bin/bash $username
 echo Password pour $username
-arch-chroot /mnt passwd $username
+#arch-chroot /mnt passwd $username
+arch-chroot /mnt sh -c 'echo "'$username':'$user_pass'" | chpasswd'
 arch-chroot /mnt systemctl set-default -f graphical.target
 
 ########## Xorg and common packages ###########
@@ -90,7 +96,9 @@ arch-chroot /mnt wget -q -4 --no-check-certificate -O /usr/bin/makepkg https://r
 arch-chroot /mnt sh -c "cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm"
 
 arch-chroot /mnt git clone https://github.com/Antidote1911/packarch.git
-arch-chroot /mnt cp -r /packarch/airootfs/usr/share/backgrounds/packarch /usr/share/backgrounds/packarch
+arch-chroot /mnt mkdir /usr/share/backgrounds
+arch-chroot /mnt mkdir /usr/share/backgrounds/packarch
+arch-chroot /mnt cp -r /packarch/airootfs/usr/share/backgrounds/packarch/* /usr/share/backgrounds/packarch
 arch-chroot /mnt cp -r /packarch/airootfs/usr/share/pixmaps/packarch-icon.png /usr/share/pixmaps/packarch-icon.png
 arch-chroot /mnt cp -r /packarch/airootfs/etc/X11/xorg.conf.d/00-keyboard.conf /etc/X11/xorg.conf.d/00-keyboard.conf
 
