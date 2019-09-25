@@ -1,3 +1,16 @@
 plasma
 dolphin
+dolphin-plugins
+kdegraphics-thumbnailers
+ffmpegthumbs
 sddm
+konsole
+terminator
+gwenview
+okular
+kwrite
+kcalc
+kfind
+kdeconnect
+partitionmanager
+kmines
