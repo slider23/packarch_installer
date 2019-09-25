@@ -21,7 +21,10 @@ read -p "hostname: " hostname
 read -p "username: " username
 
 echo "Machine virtuelle ?"
-read -p "1 - oui, 0 - non: " vm_setting
+read -p "0 - oui, 1 - non: " vm_setting
+
+echo "Selectionnez le bureau"
+read -p "0 xfce antidote, 1 xfce basique, 2 Plasma: " desktop_setting
 
 echo "${green}Formatage des partitions${reset}"
 mkfs.ext4  /dev/sda1 -L boot
@@ -70,60 +73,89 @@ arch-chroot /mnt pacman -S grub --noconfirm
 arch-chroot /mnt grub-install /dev/sda
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
-#arch-chroot /mnt sh -c useradd -m l31rb4g
 echo 'Root password'
 arch-chroot /mnt passwd
 arch-chroot /mnt sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers'
-
-if [[ $vm_setting == 0 ]]; then
-  gui_install='real_install_pkg.txt'
-
-elif [[ $vm_setting == 1 ]]; then
-  gui_install='virtual_machine_pkg.txt'
-fi
-
-arch-chroot /mnt pacman -S - < $gui_install --noconfirm
-arch-chroot /mnt pacman -S - < common_pkg.txt --noconfirm
-arch-chroot /mnt systemctl enable lightdm.service
-arch-chroot /mnt systemctl enable NetworkManager
-arch-chroot /mnt systemctl enable ntpd.service
 arch-chroot /mnt useradd -m -g users -G "adm,audio,floppy,log,network,rfkill,scanner,storage,optical,power,wheel" -s /bin/bash $username
 echo Password pour $username
 arch-chroot /mnt passwd $username
 arch-chroot /mnt systemctl set-default -f graphical.target
+
 # installing yay
 arch-chroot /mnt wget -q -4 --no-check-certificate -O /usr/bin/makepkg https://raw.githubusercontent.com/Antidote1911/packarch/master/airootfs/usr/bin/makepkg
 arch-chroot /mnt sh -c "cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm"
-#arch-chroot /mnt rm -rf /home/antidote/yay_tmp_install
-arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-aur
+
+arch-chroot /mnt git clone https://github.com/Antidote1911/packarch.git
+arch-chroot /mnt cp -r /packarch/airootfs/usr/share/backgrounds/packarch /usr/share/backgrounds
+arch-chroot /mnt cp -r /packarch/airootfs/usr/share/pixmaps/packarch-icon.png /usr/share/pixmaps/packarch-icon.png
+arch-chroot /mnt cp -r /packarch/airootfs/etc/X11/xorg.conf.d/00-keyboard.conf /etc/X11/xorg.conf.d/00-keyboard.conf
+
+########## Xorg and common packages ###########
+echo "${green}Installation des paquets communs${reset}"
+arch-chroot /mnt pacman -S - < common_pkg.txt --noconfirm
+
+if [[ $desktop_setting == 0 ]]; then
+  echo "${green}Installation des paquets Xfce Antidote${reset}"
+  desktop_install='xfce_antidote_pkg.txt'
+  arch-chroot /mnt pacman -S - < xfce_antidote_pkg.txt --noconfirm
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-aur
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-icon-theme-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-circle-icon-theme-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-folders-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm libgksu
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm gksu
+  arch-chroot /mnt systemctl enable lightdm.service
+
+elif [[ $desktop_setting == 1 ]]; then
+  echo "${green}Installation des paquets Xfce${reset}"
+  arch-chroot /mnt pacman -S - < xfce_base_pkg.txt --noconfirm
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-aur
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-icon-theme-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-circle-icon-theme-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-folders-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm libgksu
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm gksu
+  arch-chroot /mnt systemctl enable lightdm.service
+
+elif [[ $desktop_setting == 2 ]]; then
+  echo "${green}Installation des paquets Plasma${reset}"
+  arch-chroot /mnt pacman -S - < plasma_pkg.txt --noconfirm
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm octopi-git
+  arch-chroot /mnt systemctl enable sddm.service
+fi
+########## VM or not ###########################
+if [[ $vm_setting == 0 ]]; then
+  echo "${green}Installation des paquets pour la machine virtuelle${reset}"
+  arch-chroot /mnt pacman -S - < virtual_machine_pkg.txt --noconfirm
+
+elif [[ $desktop_setting == 1 ]]; then
+  echo "${green}Installation machine réelle${reset}"
+  arch-chroot /mnt pacman -S - < real_install_pkg.txt --noconfirm
+fi
+###############################################################################
+arch-chroot /mnt systemctl enable NetworkManager
+arch-chroot /mnt systemctl enable ntpd.service
+############# Aur common packages #########################
 arch-chroot /mnt sudo -u $username yay -S --noconfirm imagewriter
-arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-icon-theme-git
-arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-circle-icon-theme-git
-arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-folders-git
-arch-chroot /mnt sudo -u $username yay -S --noconfirm libgksu
-arch-chroot /mnt sudo -u $username yay -S --noconfirm gksu
 arch-chroot /mnt sudo -u $username yay -S --noconfirm fetchmirrors
 arch-chroot /mnt gpg --recv-keys 1C61A2656FB57B7E4DE0F4C1FC918B335044912E
 arch-chroot /mnt sudo -u $username yay -S --noconfirm dropbox
 arch-chroot /mnt gpg --recv-keys 2EBF997C15BDA244B6EBF5D84773BD5E130D1D45
 arch-chroot /mnt sudo -u $username yay -S --noconfirm spotify
 #######################################
-arch-chroot /mnt git clone https://github.com/Antidote1911/packarch.git
-arch-chroot /mnt cp -r /packarch/airootfs/usr/share/backgrounds/packarch /usr/share/backgrounds
-arch-chroot /mnt cp -r /packarch/airootfs/usr/share/pixmaps/packarch-icon.png /usr/share/pixmaps/packarch-icon.png
-arch-chroot /mnt cp -r /packarch/airootfs/etc/X11/xorg.conf.d/00-keyboard.conf /etc/X11/xorg.conf.d/00-keyboard.conf
+
 # arch-chroot /mnt rm -rf /home/antidote/.config
 # arch-chroot /mnt rm -rf /home/antidote/.local
-arch-chroot /mnt tar -xf /packarch/config.tar.xz -C /home/$username/
-arch-chroot /mnt rm -r packarch
-arch-chroot /mnt xdg-user-dirs-update
-echo "${green}Configuration de lightdm${reset}"
-arch-chroot /mnt sh -c 'sed -i "s/#greeter-session=example-gtk-gnome.*/greeter-session=lightdm-gtk-greeter/g" /etc/lightdm/lightdm.conf'
-arch-chroot /mnt sh -c 'echo "[greeter]" > /etc/lightdm/lightdm-gtk-greeter.conf'
-arch-chroot /mnt sh -c 'echo "theme-name = Arc-Dark" >> /etc/lightdm/lightdm-gtk-greeter.conf'
-arch-chroot /mnt sh -c 'echo "icon-theme-name = Numix-Circle" >> /etc/lightdm/lightdm-gtk-greeter.conf'
-arch-chroot /mnt sh -c 'echo "background = /usr/share/backgrounds/packarch/Black-Wallpaper-For-PC.jpg" >> /etc/lightdm/lightdm-gtk-greeter.conf'
-arch-chroot /mnt sh -c 'echo "default-user-image = /usr/share/pixmaps/packarch-icon.png" >> /etc/lightdm/lightdm-gtk-greeter.conf'
-arch-chroot /mnt sh -c 'echo "user-background = false" >> /etc/lightdm/lightdm-gtk-greeter.conf'
-arch-chroot /mnt sh -c 'echo "screensaver-timeout = 0" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+#arch-chroot /mnt tar -xf /packarch/config.tar.xz -C /home/$username/
+#arch-chroot /mnt rm -r packarch
+#arch-chroot /mnt xdg-user-dirs-update
+#echo "${green}Configuration de lightdm${reset}"
+#arch-chroot /mnt sh -c 'sed -i "s/#greeter-session=example-gtk-gnome.*/greeter-session=lightdm-gtk-greeter/g" /etc/lightdm/lightdm.conf'
+#arch-chroot /mnt sh -c 'echo "[greeter]" > /etc/lightdm/lightdm-gtk-greeter.conf'
+#arch-chroot /mnt sh -c 'echo "theme-name = Arc-Dark" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+#arch-chroot /mnt sh -c 'echo "icon-theme-name = Numix-Circle" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+#arch-chroot /mnt sh -c 'echo "background = /usr/share/backgrounds/packarch/Black-Wallpaper-For-PC.jpg" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+#arch-chroot /mnt sh -c 'echo "default-user-image = /usr/share/pixmaps/packarch-icon.png" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+#arch-chroot /mnt sh -c 'echo "user-background = false" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+#arch-chroot /mnt sh -c 'echo "screensaver-timeout = 0" >> /etc/lightdm/lightdm-gtk-greeter.conf'
 exit
