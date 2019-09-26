@@ -94,7 +94,7 @@ arch-chroot /mnt pacman -S - < common_pkg.txt --noconfirm
 arch-chroot /mnt git clone https://github.com/Antidote1911/packarch_installer.git
 
 arch-chroot /mnt mkdir /usr/share/backgrounds
-arch-chroot /mnt cp -r /packarch_installer/config/backgrounds/ /usr/share/backgrounds/
+arch-chroot /mnt cp -r /packarch_installer/config/backgrounds/packarch /usr/share/backgrounds/
 arch-chroot /mnt cp -r /packarch_installer/config/packarch-icon.png /usr/share/pixmaps/packarch-icon.png
 arch-chroot /mnt cp -r /packarch_installer/config/00-keyboard.conf /etc/X11/xorg.conf.d/00-keyboard.conf
 arch-chroot /mnt cp -r /packarch_installer/config/makepkg /usr/bin/makepkg
@@ -119,7 +119,7 @@ if [[ $desktop_setting == 0 ]]; then
   arch-chroot /mnt sh -c 'echo "[greeter]" > /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "theme-name = Arc-Dark" >> /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "icon-theme-name = Numix-Circle" >> /etc/lightdm/lightdm-gtk-greeter.conf'
-  arch-chroot /mnt sh -c 'echo "background = /usr/share/backgrounds/packarch/5.jpg" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+  arch-chroot /mnt sh -c 'echo "background = /usr/share/backgrounds/packarch/7.jpg" >> /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "default-user-image = /usr/share/pixmaps/packarch-icon.png" >> /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "user-background = false" >> /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "screensaver-timeout = 0" >> /etc/lightdm/lightdm-gtk-greeter.conf'
