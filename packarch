@@ -28,7 +28,7 @@ echo "Machine virtuelle ?"
 read -p "0 - oui, 1 - non: " vm_setting
 
 echo "Selectionnez le bureau"
-read -p "0 xfce antidote, 1 xfce basique, 2 Plasma: " desktop_setting
+read -p "0 xfce antidote, 1 xfce basique, 2 Plasma, 3 Bspwm: " desktop_setting
 
 echo "${green}Formatage des partitions${reset}"
 mkfs.ext4  /dev/sda1 -L boot
@@ -139,6 +139,24 @@ elif [[ $desktop_setting == 2 ]]; then
   arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac
   arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-tray-appindicator
   arch-chroot /mnt systemctl enable sddm.service
+
+elif [[ $desktop_setting == 3 ]]; then
+  echo "${green}Installation des paquets Bspwm${reset}"
+  arch-chroot /mnt pacman -S - < bspwm_pkg.txt --noconfirm
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm xtitle-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm sutils-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm lemonbar-xft-git
+  arch-chroot /mnt mkdir -p .config/bspwm
+  arch-chroot /mnt mkdir .config/sxhkd
+  arch-chroot /mnt cp /usr/share/doc/bspwn/examples/bspwmrc /home/$username/.config/bspwm
+  arch-chroot /mnt cp /usr/share/doc/bspwn/examples/sxkhdrc /home/$username/.config/sxhkd
+  arch-chroot /mnt sh -c "echo "export PANEL_FIFO=/tmp/panel-fifo" >> /home/$username/.bashrc"
+  arch-chroot /mnt sh -c 'echo "export PATH=$PATH:/home/'$username'/Documents/panel" >> /home/'$username'/.bashrc'
+  arch-chroot /mnt source /home/$username/.bashrc
+  arch-chroot /mnt cp -r /usr/share/doc/bspwn/examples/panel /home/$username/Documents
+  arch-chroot /mnt sh -c 'echo "panel &" >> /home/'$username'/.config/bspwm/bspwmrc'
+  arch-chroot /mnt sh -c 'echo "panel &" >> /home/'$username'/.config/bspwm/bspwmrc'
+  arch-chroot /mnt cp -r /packarch_installer/config/bspwm/.xinitrc /home/$username/.xinitrc  
 fi
 ########## VM or not ###########################
 if [[ $vm_setting == 0 ]]; then

@@ -1,0 +1,11 @@
+bspwm
+sxhkd
+terminus-font
+xorg-xset
+xorg-xsetroot
+dmenu
+termite
+trayer
+stalonetray
+ranger
+pcmanfm
