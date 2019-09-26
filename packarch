@@ -95,7 +95,7 @@ arch-chroot /mnt git clone https://github.com/Antidote1911/packarch_installer.gi
 
 arch-chroot /mnt mkdir /usr/share/backgrounds
 arch-chroot /mnt mkdir /usr/share/backgrounds/packarch
-arch-chroot /mnt cp -r /packarch_installer/config/backgrounds/* /usr/share/backgrounds/packarch
+arch-chroot /mnt cp -r "/packarch_installer/config/backgrounds/* /usr/share/backgrounds/packarch"
 arch-chroot /mnt cp -r /packarch_installer/config/packarch-icon.png /usr/share/pixmaps/packarch-icon.png
 arch-chroot /mnt cp -r /packarch_installer/config/00-keyboard.conf /etc/X11/xorg.conf.d/00-keyboard.conf
 arch-chroot /mnt cp -r /packarch_installer/config/makepkg /usr/bin/makepkg
