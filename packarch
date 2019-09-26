@@ -100,7 +100,7 @@ arch-chroot /mnt cp -r /packarch_installer/config/packarch-icon.png /usr/share/p
 arch-chroot /mnt cp -r /packarch_installer/config/00-keyboard.conf /etc/X11/xorg.conf.d/00-keyboard.conf
 arch-chroot /mnt cp -r /packarch_installer/config/makepkg /usr/bin/makepkg
 #arch-chroot /mnt wget -q -4 --no-check-certificate -O /usr/bin/makepkg https://raw.githubusercontent.com/Antidote1911/packarch/master/airootfs/usr/bin/makepkg
-# installing yay
+echo "${green}Installation de Yay${reset}"
 arch-chroot /mnt sh -c "cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm"
 
 if [[ $desktop_setting == 0 ]]; then
@@ -120,7 +120,7 @@ if [[ $desktop_setting == 0 ]]; then
   arch-chroot /mnt sh -c 'echo "[greeter]" > /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "theme-name = Arc-Dark" >> /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "icon-theme-name = Numix-Circle" >> /etc/lightdm/lightdm-gtk-greeter.conf'
-  arch-chroot /mnt sh -c 'echo "background = /usr/share/backgrounds/packarch/Black-Wallpaper-For-PC.jpg" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+  arch-chroot /mnt sh -c 'echo "background = /usr/share/backgrounds/packarch/5.jpg" >> /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "default-user-image = /usr/share/pixmaps/packarch-icon.png" >> /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "user-background = false" >> /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "screensaver-timeout = 0" >> /etc/lightdm/lightdm-gtk-greeter.conf'
