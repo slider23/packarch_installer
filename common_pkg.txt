@@ -2,6 +2,8 @@ xorg
 xorg-drivers
 ntp
 numlockx
+reflector
+neofetch
 openssh
 x11-ssh-askpass
 wpa_supplicant
