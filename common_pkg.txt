@@ -1,5 +1,6 @@
 xorg
 xorg-drivers
+xorg-xinit
 ntp
 numlockx
 reflector
