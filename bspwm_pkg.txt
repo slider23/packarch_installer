@@ -13,7 +13,6 @@ lxappearance
 leafpad
 pragha
 nm-connection-editor
-nitrogen
 gpick
 htop
 system-config-printer
