@@ -5,8 +5,12 @@ xfce4-appfinder
 xfce4-power-manager
 xfce4-notifyd
 ffmpegthumbnailer
+kvantum-qt5
+kvantum-theme-arc
+qt5ct
 volumeicon
 lxappearance
+leafpad
 pragha
 nm-connection-editor
 nitrogen
@@ -37,3 +41,8 @@ lightdm-gtk-greeter
 lightdm-gtk-greeter-settings
 network-manager-applet
 polkit-gnome
+arc-gtk-theme
+arc-icon-theme
+gtk-engine-murrine
+ttf-font-awesome
+awesome-terminal-fonts

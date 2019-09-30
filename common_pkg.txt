@@ -2,6 +2,7 @@ xorg
 xorg-drivers
 xorg-xinit
 ntp
+lsb-release
 numlockx
 reflector
 neofetch
