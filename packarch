@@ -143,6 +143,8 @@ elif [[ $desktop_setting == 2 ]]; then
 elif [[ $desktop_setting == 3 ]]; then
   echo "${green}Installation des paquets Bspwm${reset}"
   arch-chroot /mnt pacman -S - < bspwm_pkg.txt --noconfirm
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm libgksu
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm gksu
   arch-chroot /mnt sudo -u $username yay -S --noconfirm xtitle-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm bspwm-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm polybar-git

@@ -13,7 +13,6 @@ lxappearance
 leafpad
 pragha
 nm-connection-editor
-gpick
 htop
 system-config-printer
 gufw
@@ -25,9 +24,7 @@ blueberry
 terminus-font
 xorg-xset
 xorg-xsetroot
-dmenu
 termite
-ranger
 pcmanfm
 compton
 nomacs
@@ -45,3 +42,4 @@ arc-icon-theme
 gtk-engine-murrine
 ttf-font-awesome
 awesome-terminal-fonts
+gcolor2
