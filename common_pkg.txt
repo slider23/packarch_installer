@@ -1,3 +1,4 @@
+base
 xorg
 xorg-drivers
 xorg-xinit
