@@ -51,7 +51,7 @@ echo "Server = http://mirror.archlinux.ikoula.com/archlinux/\$repo/os/\$arch" >>
 echo "Server = http://mirrors.standaloneinstaller.com/archlinux/\$repo/os/\$arch" >> /etc/pacman.d/mirrorlist
 
 echo "${green}Installation base et base-devel${reset}"
-pacstrap /mnt base base-devel
+pacstrap /mnt base base-devel linux
 
 echo "${green}Generation fstab${reset}"
 genfstab -pU /mnt >> /mnt/etc/fstab
