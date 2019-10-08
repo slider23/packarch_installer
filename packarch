@@ -108,6 +108,7 @@ if [[ $desktop_setting == 0 ]]; then
   arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-aur
   arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-icon-theme-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-circle-icon-theme-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-circle-arc-icons-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-folders-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm libgksu
   arch-chroot /mnt sudo -u $username yay -S --noconfirm gksu
@@ -154,10 +155,25 @@ elif [[ $desktop_setting == 3 ]]; then
   arch-chroot /mnt sudo -u $username yay -S --noconfirm sxhkd-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac
   arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-tray-appindicator
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-icon-theme-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-circle-icon-theme-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-circle-arc-icons-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm nerd-fonts-complete
   arch-chroot /mnt sudo -u $username yay -S --noconfirm breeze-cursors-lh
   arch-chroot /mnt sudo -u $username yay -S --noconfirm xcursor-breeze
   arch-chroot /mnt tar -xf /packarch_installer/config/config_bspwm.tar.xz -C /home/$username/
   arch-chroot /mnt tar -xf /packarch_installer/config/oblogout_theme.tar.xz -C /usr/share/themes/
+  arch-chroot /mnt sh -c 'echo "QT_QPA_PLATFORMTHEME=qt5ct" >> /etc/environment'
+  arch-chroot /mnt sh -c 'echo "EDITOR=nano" >> /etc/environment'
+  arch-chroot /mnt sh -c 'sed -i "s/#greeter-session=example-gtk-gnome.*/greeter-session=lightdm-gtk-greeter/g" /etc/lightdm/lightdm.conf'
+  arch-chroot /mnt sh -c 'echo "[greeter]" > /etc/lightdm/lightdm-gtk-greeter.conf'
+  arch-chroot /mnt sh -c 'echo "theme-name = Arc-Dark" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+  arch-chroot /mnt sh -c 'echo "icon-theme-name = Numix-Circle" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+  arch-chroot /mnt sh -c 'echo "background = /usr/share/backgrounds/packarch/7.jpg" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+  arch-chroot /mnt sh -c 'echo "default-user-image = /usr/share/pixmaps/packarch-icon.png" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+  arch-chroot /mnt sh -c 'echo "user-background = false" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+  arch-chroot /mnt sh -c 'echo "screensaver-timeout = 0" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+  arch-chroot /mnt cp -r /packarch_installer/config/oblogout.conf /etc/oblogout.conf
   arch-chroot /mnt systemctl enable lightdm.service
 fi
 ########## VM or not ###########################

@@ -3,6 +3,7 @@ xorg-drivers
 xorg-xinit
 ntp
 lsb-release
+bind-tools
 numlockx
 reflector
 neofetch

@@ -8,6 +8,7 @@ ffmpegthumbnailer
 kvantum-qt5
 kvantum-theme-arc
 qt5ct
+qt5-styleplugins
 volumeicon
 lxappearance
 leafpad
@@ -30,6 +31,10 @@ compton
 nomacs
 gparted
 feh
+jgmenu
+xdo
+xdotool
+yad
 conky
 oblogout
 lightdm
