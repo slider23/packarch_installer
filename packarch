@@ -184,6 +184,7 @@ if [[ $vm_setting == 0 ]]; then
 elif [[ $desktop_setting == 1 ]]; then
   echo "${green}Installation machine réelle${reset}"
   arch-chroot /mnt pacman -S - < real_install_pkg.txt --noconfirm
+  arch-chroot /mnt cp -r /packarch_installer/config/20-nvidia.conf /etc/X11/xorg.conf.d/20-nvidia.conf
 fi
 ###############################################################################
 arch-chroot /mnt systemctl enable NetworkManager
