@@ -1,6 +1,8 @@
 xorg
 xorg-drivers
 xorg-xinit
+linux-firmware
+nano
 ntp
 lsb-release
 bind-tools
@@ -28,7 +30,7 @@ unrar
 unzip
 zip
 p7zip
-unarchiver
+xarchiver
 lzop
 lrzip
 unace
@@ -53,3 +55,4 @@ qt5-translations
 gimp
 libreoffice-fresh
 libreoffice-fresh-fr
+hwinfo

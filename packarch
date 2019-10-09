@@ -124,6 +124,7 @@ if [[ $desktop_setting == 0 ]]; then
   arch-chroot /mnt sh -c 'echo "default-user-image = /usr/share/pixmaps/packarch-icon.png" >> /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "user-background = false" >> /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "screensaver-timeout = 0" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+  arch-chroot /mnt sh -c 'echo "greeter-setup-script=/usr/bin/numlockx on" >> /etc/lightdm/lightdm.conf'
   arch-chroot /mnt systemctl enable lightdm.service
 
 elif [[ $desktop_setting == 1 ]]; then
@@ -148,13 +149,12 @@ elif [[ $desktop_setting == 3 ]]; then
   arch-chroot /mnt sudo -u $username yay -S --noconfirm gksu
   arch-chroot /mnt sudo -u $username yay -S --noconfirm xtitle-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm bspwm-git
-  arch-chroot /mnt sudo -u $username yay -S --noconfirm polybar-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm polybar
   arch-chroot /mnt sudo -u $username yay -S --noconfirm sardi-icons
   arch-chroot /mnt sudo -u $username yay -S --noconfirm mintstick-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm sutils-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm sxhkd-git
-  arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac
-  arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-tray-appindicator
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-aur
   arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-icon-theme-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-circle-icon-theme-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-circle-arc-icons-git
@@ -173,6 +173,7 @@ elif [[ $desktop_setting == 3 ]]; then
   arch-chroot /mnt sh -c 'echo "default-user-image = /usr/share/pixmaps/packarch-icon.png" >> /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "user-background = false" >> /etc/lightdm/lightdm-gtk-greeter.conf'
   arch-chroot /mnt sh -c 'echo "screensaver-timeout = 0" >> /etc/lightdm/lightdm-gtk-greeter.conf'
+  arch-chroot /mnt sh -c 'echo "greeter-setup-script=/usr/bin/numlockx on" >> /etc/lightdm/lightdm.conf'
   arch-chroot /mnt cp -r /packarch_installer/config/oblogout.conf /etc/oblogout.conf
   arch-chroot /mnt systemctl enable lightdm.service
 fi
@@ -181,7 +182,7 @@ if [[ $vm_setting == 0 ]]; then
   echo "${green}Installation des paquets pour la machine virtuelle${reset}"
   arch-chroot /mnt pacman -S - < virtual_machine_pkg.txt --noconfirm
 
-elif [[ $desktop_setting == 1 ]]; then
+elif [[ $vm_setting == 1 ]]; then
   echo "${green}Installation machine réelle${reset}"
   arch-chroot /mnt pacman -S - < real_install_pkg.txt --noconfirm
   arch-chroot /mnt cp -r /packarch_installer/config/20-nvidia.conf /etc/X11/xorg.conf.d/20-nvidia.conf
@@ -190,7 +191,6 @@ fi
 arch-chroot /mnt systemctl enable NetworkManager
 arch-chroot /mnt systemctl enable ntpd.service
 ############# Aur common packages #########################
-arch-chroot /mnt sudo -u $username yay -S --noconfirm imagewriter
 arch-chroot /mnt sudo -u $username yay -S --noconfirm fetchmirrors
 arch-chroot /mnt gpg --recv-keys 1C61A2656FB57B7E4DE0F4C1FC918B335044912E
 arch-chroot /mnt sudo -u $username yay -S --noconfirm dropbox

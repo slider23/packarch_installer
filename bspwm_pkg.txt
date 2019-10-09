@@ -15,6 +15,7 @@ leafpad
 pragha
 nm-connection-editor
 htop
+xarchiver
 system-config-printer
 gufw
 hardinfo
@@ -23,8 +24,6 @@ pavucontrol
 thunar-volman
 blueberry
 terminus-font
-xorg-xset
-xorg-xsetroot
 termite
 pcmanfm
 compton
@@ -37,6 +36,7 @@ xdotool
 yad
 conky
 oblogout
+xtrlock
 lightdm
 lightdm-gtk-greeter
 lightdm-gtk-greeter-settings
