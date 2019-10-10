@@ -30,7 +30,6 @@ unrar
 unzip
 zip
 p7zip
-xarchiver
 lzop
 lrzip
 unace
@@ -43,6 +42,7 @@ firefox-i18n-fr
 git
 gvfs
 gvfs-nfs
+gparted
 nfs-utils
 networkmanager
 xdg-user-dirs

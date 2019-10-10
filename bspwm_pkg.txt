@@ -28,7 +28,6 @@ termite
 pcmanfm
 compton
 nomacs
-gparted
 feh
 jgmenu
 xdo

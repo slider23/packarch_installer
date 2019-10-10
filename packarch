@@ -8,7 +8,7 @@ green=`tput setaf 2`
 reset=`tput sgr0`
 
 echo "${red}Installation ArchLinux"
-echo "Ce script installe Archlinux et Xfce en configuration francaise"
+echo "Ce script installe Archlinux en configuration francaise"
 echo "sur les partitions sda1 pour boot, sda2 pour root et sda3 pour home${reset}"
 
 echo "${green}Augmentation de la partition cowspace${reset}"
@@ -18,8 +18,8 @@ timedatectl set-ntp true
 #setfont fr-latin9
 
 read -p "hostname: " hostname
-read -p "Root Password: " root_pass
 ##########################################
+echo "${green}Same password for root user${reset}"
 read -p "username: " username
 read -p "$username Password: " user_pass
 ##########################################
@@ -77,13 +77,9 @@ arch-chroot /mnt pacman -S grub --noconfirm
 arch-chroot /mnt grub-install --recheck /dev/sda
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
-echo 'Root password'
-#arch-chroot /mnt passwd
-arch-chroot /mnt sh -c 'echo "root:'$root_pass'" | chpasswd'
+arch-chroot /mnt sh -c 'echo "root:'$user_pass'" | chpasswd'
 arch-chroot /mnt sh -c 'echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers'
 arch-chroot /mnt useradd -m -g users -G "adm,audio,floppy,log,network,rfkill,scanner,storage,optical,power,wheel" -s /bin/bash $username
-echo Password pour $username
-#arch-chroot /mnt passwd $username
 arch-chroot /mnt sh -c 'echo "'$username':'$user_pass'" | chpasswd'
 arch-chroot /mnt systemctl set-default -f graphical.target
 
@@ -102,14 +98,23 @@ arch-chroot /mnt cp -r /packarch_installer/config/makepkg /usr/bin/makepkg
 echo "${green}Installation de Yay${reset}"
 arch-chroot /mnt sh -c "cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm"
 
+############# Aur common packages #########################
+arch-chroot /mnt sudo -u $username yay -S --noconfirm fetchmirrors
+arch-chroot /mnt gpg --recv-keys 1C61A2656FB57B7E4DE0F4C1FC918B335044912E
+arch-chroot /mnt sudo -u $username yay -S --noconfirm dropbox
+arch-chroot /mnt gpg --recv-keys 2EBF997C15BDA244B6EBF5D84773BD5E130D1D45
+arch-chroot /mnt sudo -u $username yay -S --noconfirm spotify
+#######################################
+
 if [[ $desktop_setting == 0 ]]; then
-  echo "${green}Installation des paquets Xfce Antidote${reset}"
+  echo "${green}Installation des paquets Aur pour Xfce Antidote${reset}"
   arch-chroot /mnt pacman -S - < xfce_antidote_pkg.txt --noconfirm
   arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-aur
   arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-icon-theme-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-circle-icon-theme-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-circle-arc-icons-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-folders-git
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm mintstick-git
   arch-chroot /mnt sudo -u $username yay -S --noconfirm libgksu
   arch-chroot /mnt sudo -u $username yay -S --noconfirm gksu
   ###### xfce antidote config #########
@@ -128,7 +133,7 @@ if [[ $desktop_setting == 0 ]]; then
   arch-chroot /mnt systemctl enable lightdm.service
 
 elif [[ $desktop_setting == 1 ]]; then
-  echo "${green}Installation des paquets Xfce${reset}"
+  echo "${green}Installation des paquets Aur pour Xfce${reset}"
   arch-chroot /mnt pacman -S - < xfce_base_pkg.txt --noconfirm
   arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-aur
   arch-chroot /mnt sudo -u $username yay -S --noconfirm libgksu
@@ -136,14 +141,14 @@ elif [[ $desktop_setting == 1 ]]; then
   arch-chroot /mnt systemctl enable lightdm.service
 
 elif [[ $desktop_setting == 2 ]]; then
-  echo "${green}Installation des paquets Plasma${reset}"
+  echo "${green}Installation des paquets Aur pour Plasma${reset}"
   arch-chroot /mnt pacman -S - < plasma_pkg.txt --noconfirm
-  arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac
+  arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-aur
   arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-tray-appindicator
   arch-chroot /mnt systemctl enable sddm.service
 
 elif [[ $desktop_setting == 3 ]]; then
-  echo "${green}Installation des paquets Bspwm${reset}"
+  echo "${green}Installation des paquets Aur pour Bspwm${reset}"
   arch-chroot /mnt pacman -S - < bspwm_pkg.txt --noconfirm
   arch-chroot /mnt sudo -u $username yay -S --noconfirm libgksu
   arch-chroot /mnt sudo -u $username yay -S --noconfirm gksu
@@ -183,18 +188,11 @@ if [[ $vm_setting == 0 ]]; then
   arch-chroot /mnt pacman -S - < virtual_machine_pkg.txt --noconfirm
 
 elif [[ $vm_setting == 1 ]]; then
-  echo "${green}Installation machine réelle${reset}"
+  echo "${green}Installation des paquets pour la machine réelle${reset}"
   arch-chroot /mnt pacman -S - < real_install_pkg.txt --noconfirm
   arch-chroot /mnt cp -r /packarch_installer/config/20-nvidia.conf /etc/X11/xorg.conf.d/20-nvidia.conf
 fi
 ###############################################################################
 arch-chroot /mnt systemctl enable NetworkManager
 arch-chroot /mnt systemctl enable ntpd.service
-############# Aur common packages #########################
-arch-chroot /mnt sudo -u $username yay -S --noconfirm fetchmirrors
-arch-chroot /mnt gpg --recv-keys 1C61A2656FB57B7E4DE0F4C1FC918B335044912E
-arch-chroot /mnt sudo -u $username yay -S --noconfirm dropbox
-arch-chroot /mnt gpg --recv-keys 2EBF997C15BDA244B6EBF5D84773BD5E130D1D45
-arch-chroot /mnt sudo -u $username yay -S --noconfirm spotify
-#######################################
 exit
