@@ -18,3 +18,5 @@ gtk-engines
 lightdm
 lightdm-gtk-greeter
 lightdm-gtk-greeter-settings
+variety
+gcolor2
