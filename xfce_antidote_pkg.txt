@@ -19,3 +19,6 @@ lightdm
 lightdm-gtk-greeter
 lightdm-gtk-greeter-settings
 gcolor2
+kvantum-qt5
+kvantum-theme-arc
+qt5ct
