@@ -22,3 +22,4 @@ gcolor2
 kvantum-qt5
 kvantum-theme-arc
 qt5ct
+network-manager-applet
