@@ -75,6 +75,7 @@ mkswap /mnt/swapfile
 swapon --discard /mnt/swapfile
 
 echo "${green}Get fastest pacman mirrors ${reset}"
+pacman -Sy --noconfirm reflector || { echo "Error at script start: Are you sure you're running this as the root user? Are you sure you have an internet connection?"; exit; }
 cp -vf /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 reflector --country Netherlands --country Russia -p https --sort rate --verbose --save /etc/pacman.d/mirrorlist
 
