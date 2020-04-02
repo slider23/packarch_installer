@@ -66,8 +66,13 @@ echo "${green}Mount partitions${reset}"
 mount /dev/sda2 /mnt
 mkdir /mnt/{boot,home}
 mount /dev/sda1 /mnt/boot
-#swapon /dev/sda3
 mount /dev/sda3 /mnt/home
+
+echo "${green}Make swap${reset}"
+fallocate -l 4G /mnt/swapfile
+chmod 600 /mnt/swapfile
+mkswap /mnt/swapfile
+swapon --discard /mnt/swapfile
 
 echo "${green}Get fastest pacman mirrors ${reset}"
 cp -vf /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
@@ -98,7 +103,7 @@ arch-chroot /mnt sh -c "echo "FONT=ter-u14n" >> /etc/vconsole.conf"
 arch-chroot /mnt mkinitcpio -p linux
 arch-chroot /mnt pacman -Syy
 arch-chroot /mnt pacman -S grub --noconfirm
-arch-chroot /mnt grub-install --recheck /dev/sda
+arch-chroot /mnt grub-install --recheck --target=i386-pc /dev/sda
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
 arch-chroot /mnt sh -c 'echo "root:'$user_pass'" | chpasswd'
