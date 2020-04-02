@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Arch Linux Fast Install - Быстрая установка Arch Linux https://github.com/ordanax/arch2018
-# Цель скрипта - быстрое развертывание системы с вашими персональными настройками (конфиг XFCE, темы, программы и т.д.).
+# Based on
+# https://github.com/ordanax/arch2018
+# https://github.com/Antidote1911/packarch_installer
 
 red=`tput setaf 1`
 green=`tput setaf 2`
@@ -9,13 +10,12 @@ reset=`tput sgr0`
 
 echo "${red}Installation ArchLinux"
 echo "Ce script installe Archlinux en configuration francaise"
-echo "sur les partitions sda1 pour boot, sda2 pour root et sda3 pour home${reset}"
+echo "Need empty /dev/sda. Will created /dev/sda1 for boot, /dev/sda2 for root and /dev/sda3 for home${reset}"
 
-echo "${green}Augmentation de la partition cowspace${reset}"
+echo "${green}Increate size of cowspace${reset}"
 mount -o remount,size=2G /run/archiso/cowspace
-loadkeys fr
+
 timedatectl set-ntp true
-#setfont fr-latin9
 
 read -p "hostname: " hostname
 ##########################################
@@ -24,33 +24,56 @@ read -p "username: " username
 read -p "$username Password: " user_pass
 ##########################################
 
-echo "Machine virtuelle ?"
-read -p "0 - oui, 1 - non: " vm_setting
+echo "Install to virtualbox ?"
+read -p "0 - yes, 1 - no: " vm_setting
 
-echo "Selectionnez le bureau"
+echo "Select DE"
 read -p "0 xfce antidote, 1 xfce basique, 2 Plasma, 3 Bspwm: " desktop_setting
 
-echo "${green}Formatage des partitions${reset}"
-mkfs.ext4  /dev/sda1 -L boot
-mkfs.ext4  /dev/sda2 -L root
-#mkswap /dev/sda3 -L swap
-mkfs.ext4  /dev/sda3 -L home
+echo "${green}Format partitions${reset}"
+cat <<EOF | fdisk /dev/sda
+o
+n
+p
 
-echo "${green}Montage des partitions${reset}"
+
++400M
+Y
+n
+p
+
+
++30G
+Y
+n
+p
+
+
+
+Y
+a
+1
+w
+EOF
+partprobe
+
+yes | mkfs.ext4 /dev/sda1
+yes | mkfs.ext4 /dev/sda2
+yes | mkfs.ext4 /dev/sda3
+
+
+echo "${green}Mount partitions${reset}"
 mount /dev/sda2 /mnt
 mkdir /mnt/{boot,home}
 mount /dev/sda1 /mnt/boot
 #swapon /dev/sda3
 mount /dev/sda3 /mnt/home
 
-echo "${green}4- Ajout des miroirs ${reset}"
-echo "Server = https://mir.archlinux.fr/\$repo/os/\$arch" > /etc/pacman.d/mirrorlist
-echo "Server = http://archlinux.polymorf.fr/\$repo/os/\$arch" >> /etc/pacman.d/mirrorlist
-echo "Server = http://archlinux.mirrors.ovh.net/archlinux/\$repo/os/\$arch" >> /etc/pacman.d/mirrorlist
-echo "Server = http://mirror.archlinux.ikoula.com/archlinux/\$repo/os/\$arch" >> /etc/pacman.d/mirrorlist
-echo "Server = http://mirrors.standaloneinstaller.com/archlinux/\$repo/os/\$arch" >> /etc/pacman.d/mirrorlist
+echo "${green}Get fastest pacman mirrors ${reset}"
+cp -vf /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+reflector --country Netherlands --country Russia -p https --sort rate --verbose --save /etc/pacman.d/mirrorlist
 
-echo "${green}Installation base et base-devel${reset}"
+echo "${green}Installation base and base-devel${reset}"
 pacstrap /mnt base base-devel linux
 
 echo "${green}Generation fstab${reset}"
@@ -61,16 +84,17 @@ arch-chroot /mnt rm -f /etc/hosts
 arch-chroot /mnt sh -c "echo "127.0.0.1		localhost" >> /etc/hosts"
 arch-chroot /mnt sh -c "echo "::1		    localhost" >> /etc/hosts"
 arch-chroot /mnt sh -c "echo "127.0.1.1		"$hostname".localdomain "'$hostname' >> /etc/hosts"
-arch-chroot /mnt ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime
-echo "${green}Edition de locale.gen${reset}"
-arch-chroot /mnt sh -c 'echo "fr_FR.UTF-8 UTF-8" > /etc/locale.gen'
+arch-chroot /mnt ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
+echo "${green}Edit locale.gen${reset}"
+arch-chroot /mnt sh -c 'echo "en_US.UTF-8 UTF-8" > /etc/locale.gen'
+arch-chroot /mnt sh -c 'echo "ru_RU.UTF-8 UTF-8" > /etc/locale.gen'
 echo "${green}Generation locales${reset}"
 arch-chroot /mnt locale-gen
-echo "${green}Synchronisation horloge${reset}"
-arch-chroot /mnt hwclock --systohc --utc
-arch-chroot /mnt sh -c "echo "LANG=fr_FR.UTF-8" > /etc/locale.conf"
-arch-chroot /mnt sh -c "echo "KEYMAP=fr" > /etc/vconsole.conf"
-arch-chroot /mnt sh -c "echo "FONT=ter-v16n" >> /etc/vconsole.conf"
+echo "${green}Set hardware clock${reset}"
+arch-chroot /mnt hwclock --systohc --localtime
+arch-chroot /mnt sh -c "echo "LANG=en_US.UTF-8" > /etc/locale.conf"
+arch-chroot /mnt sh -c "echo "KEYMAP=ru" > /etc/vconsole.conf"
+arch-chroot /mnt sh -c "echo "FONT=ter-u14n" >> /etc/vconsole.conf"
 arch-chroot /mnt mkinitcpio -p linux
 arch-chroot /mnt pacman -Syy
 arch-chroot /mnt pacman -S grub --noconfirm
@@ -84,7 +108,7 @@ arch-chroot /mnt sh -c 'echo "'$username':'$user_pass'" | chpasswd'
 arch-chroot /mnt systemctl set-default -f graphical.target
 
 ########## Xorg and common packages ###########
-echo "${green}Installation des paquets communs${reset}"
+echo "${green}Install common packs${reset}"
 arch-chroot /mnt pacman -S - < common_pkg.txt --noconfirm
 
 arch-chroot /mnt git clone https://github.com/Antidote1911/packarch_installer.git
@@ -95,19 +119,19 @@ arch-chroot /mnt cp -r /packarch_installer/config/packarch-icon.png /usr/share/p
 arch-chroot /mnt cp -r /packarch_installer/config/00-keyboard.conf /etc/X11/xorg.conf.d/00-keyboard.conf
 arch-chroot /mnt cp -r /packarch_installer/config/makepkg /usr/bin/makepkg
 #arch-chroot /mnt wget -q -4 --no-check-certificate -O /usr/bin/makepkg https://raw.githubusercontent.com/Antidote1911/packarch/master/airootfs/usr/bin/makepkg
-echo "${green}Installation de Yay${reset}"
-arch-chroot /mnt sh -c "cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm"
+echo "${green}Install yay${reset}"
+arch-chroot /mnt sh -c "cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm && cd .. && rm -rf yay"
 
 ############# Aur common packages #########################
 arch-chroot /mnt sudo -u $username yay -S --noconfirm fetchmirrors
 arch-chroot /mnt gpg --recv-keys 1C61A2656FB57B7E4DE0F4C1FC918B335044912E
 arch-chroot /mnt sudo -u $username yay -S --noconfirm dropbox
-arch-chroot /mnt gpg --recv-keys 2EBF997C15BDA244B6EBF5D84773BD5E130D1D45
-arch-chroot /mnt sudo -u $username yay -S --noconfirm spotify
+#arch-chroot /mnt gpg --recv-keys 2EBF997C15BDA244B6EBF5D84773BD5E130D1D45
+#arch-chroot /mnt sudo -u $username yay -S --noconfirm spotify
 #######################################
 
 if [[ $desktop_setting == 0 ]]; then
-  echo "${green}Installation des paquets Aur pour Xfce Antidote${reset}"
+  echo "${green}Install packs for Xfce Antidote${reset}"
   arch-chroot /mnt pacman -S - < xfce_antidote_pkg.txt --noconfirm
   arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-aur
   arch-chroot /mnt sudo -u $username yay -S --noconfirm numix-icon-theme-git
@@ -134,7 +158,7 @@ if [[ $desktop_setting == 0 ]]; then
   arch-chroot /mnt systemctl enable lightdm.service
 
 elif [[ $desktop_setting == 1 ]]; then
-  echo "${green}Installation des paquets Aur pour Xfce${reset}"
+  echo "${green}Install packs for Xfce${reset}"
   arch-chroot /mnt pacman -S - < xfce_base_pkg.txt --noconfirm
   arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-aur
   arch-chroot /mnt sudo -u $username yay -S --noconfirm libgksu
@@ -142,14 +166,14 @@ elif [[ $desktop_setting == 1 ]]; then
   arch-chroot /mnt systemctl enable lightdm.service
 
 elif [[ $desktop_setting == 2 ]]; then
-  echo "${green}Installation des paquets Aur pour Plasma${reset}"
+  echo "${green}Install packs for Plasma${reset}"
   arch-chroot /mnt pacman -S - < plasma_pkg.txt --noconfirm
   arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-aur
   arch-chroot /mnt sudo -u $username yay -S --noconfirm pamac-tray-appindicator
   arch-chroot /mnt systemctl enable sddm.service
 
 elif [[ $desktop_setting == 3 ]]; then
-  echo "${green}Installation des paquets Aur pour Bspwm${reset}"
+  echo "${green}Install packs for Bspwm${reset}"
   arch-chroot /mnt pacman -S - < bspwm_pkg.txt --noconfirm
   arch-chroot /mnt sudo -u $username yay -S --noconfirm libgksu
   arch-chroot /mnt sudo -u $username yay -S --noconfirm gksu
@@ -184,11 +208,11 @@ elif [[ $desktop_setting == 3 ]]; then
 fi
 ########## VM or not ###########################
 if [[ $vm_setting == 0 ]]; then
-  echo "${green}Installation des paquets pour la machine virtuelle${reset}"
+  echo "${green}Install packs for Virtualbox${reset}"
   arch-chroot /mnt pacman -S - < virtual_machine_pkg.txt --noconfirm
 
 elif [[ $vm_setting == 1 ]]; then
-  echo "${green}Installation des paquets pour la machine réelle${reset}"
+  echo "${green}Install packs for hardware${reset}"
   arch-chroot /mnt pacman -S - < real_install_pkg.txt --noconfirm
   arch-chroot /mnt cp -r /packarch_installer/config/20-nvidia.conf /etc/X11/xorg.conf.d/20-nvidia.conf
 fi
