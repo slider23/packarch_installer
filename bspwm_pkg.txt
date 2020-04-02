@@ -45,5 +45,4 @@ arc-gtk-theme
 arc-icon-theme
 gtk-engine-murrine
 ttf-font-awesome
-awesome-terminal-fonts
 gcolor2

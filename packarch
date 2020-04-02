@@ -8,29 +8,31 @@ red=`tput setaf 1`
 green=`tput setaf 2`
 reset=`tput sgr0`
 
-echo "${red}Installation ArchLinux"
-echo "Ce script installe Archlinux en configuration francaise"
-echo "Need empty /dev/sda. Will created /dev/sda1 for boot, /dev/sda2 for root and /dev/sda3 for home${reset}"
+echo "${red}Autoinstall ArchLinux"
+echo "Empty /dev/sda required."
+echo "Script will create:"
+echo "/dev/sda1 for boot"
+echo "/dev/sda2 for root"
+echo "/dev/sda3 for home"
+echo "WARNING! All data on /dev/sda will be deleted.${reset}"
+read -p "Continue ? (Y,n)" continue
 
-echo "${green}Increate size of cowspace${reset}"
 mount -o remount,size=2G /run/archiso/cowspace
-
 timedatectl set-ntp true
 
 read -p "hostname: " hostname
 ##########################################
-echo "${green}Same password for root user${reset}"
 read -p "username: " username
 read -p "$username Password: " user_pass
+echo "${green}Same password will be for root user${reset}"
 ##########################################
 
 echo "Install to virtualbox ?"
-read -p "0 - yes, 1 - no: " vm_setting
+read -p "1 - yes, 0 - no: " vm_setting
 
-echo "Select DE"
-read -p "0 xfce antidote, 1 xfce basique, 2 Plasma, 3 Bspwm: " desktop_setting
+echo "Select desktop:"
+read -p "0 Xfce antidote, 1 Xfce base, 2 Plasma, 3 Bspwm: " desktop_setting
 
-echo "${green}Format partitions${reset}"
 cat <<EOF | fdisk /dev/sda
 o
 n
@@ -74,16 +76,17 @@ chmod 600 /mnt/swapfile
 mkswap /mnt/swapfile
 swapon --discard /mnt/swapfile
 
-echo "${green}Get fastest pacman mirrors ${reset}"
+echo "${green}Get the fastest pacman mirrors ${reset}"
 pacman -Sy --noconfirm reflector || { echo "Error at script start: Are you sure you're running this as the root user? Are you sure you have an internet connection?"; exit; }
 cp -vf /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 reflector --country Netherlands --country Russia -p https --sort rate --verbose --save /etc/pacman.d/mirrorlist
 
-echo "${green}Installation base and base-devel${reset}"
+echo "${green}Install ArchLinux${reset}"
 pacstrap /mnt base base-devel linux
 
 echo "${green}Generation fstab${reset}"
 genfstab -pU /mnt >> /mnt/etc/fstab
+echo '/swapfile none swap defaults,discard 0 0' >> /mnt/etc/fstab
 
 arch-chroot /mnt sh -c 'echo '$hostname' > /etc/hostname'
 arch-chroot /mnt rm -f /etc/hosts
@@ -91,12 +94,10 @@ arch-chroot /mnt sh -c "echo "127.0.0.1		localhost" >> /etc/hosts"
 arch-chroot /mnt sh -c "echo "::1		    localhost" >> /etc/hosts"
 arch-chroot /mnt sh -c "echo "127.0.1.1		"$hostname".localdomain "'$hostname' >> /etc/hosts"
 arch-chroot /mnt ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
-echo "${green}Edit locale.gen${reset}"
+echo "${green}Set locale${reset}"
 arch-chroot /mnt sh -c 'echo "en_US.UTF-8 UTF-8" > /etc/locale.gen'
 arch-chroot /mnt sh -c 'echo "ru_RU.UTF-8 UTF-8" > /etc/locale.gen'
-echo "${green}Generation locales${reset}"
 arch-chroot /mnt locale-gen
-echo "${green}Set hardware clock${reset}"
 arch-chroot /mnt hwclock --systohc --localtime
 arch-chroot /mnt sh -c "echo "LANG=en_US.UTF-8" > /etc/locale.conf"
 arch-chroot /mnt sh -c "echo "KEYMAP=ru" > /etc/vconsole.conf"
@@ -105,6 +106,7 @@ arch-chroot /mnt mkinitcpio -p linux
 arch-chroot /mnt pacman -Syy
 arch-chroot /mnt pacman -S grub --noconfirm
 arch-chroot /mnt grub-install --recheck --target=i386-pc /dev/sda
+arch-chroot /mnt sed -i -e 's/^GRUB_TIMEOUT=.*$/GRUB_TIMEOUT=1/' /etc/default/grub
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
 arch-chroot /mnt sh -c 'echo "root:'$user_pass'" | chpasswd'
@@ -117,7 +119,7 @@ arch-chroot /mnt systemctl set-default -f graphical.target
 echo "${green}Install common packs${reset}"
 arch-chroot /mnt pacman -S - < common_pkg.txt --noconfirm
 
-arch-chroot /mnt git clone https://github.com/Antidote1911/packarch_installer.git
+arch-chroot /mnt git clone https://github.com/slider23/packarch_installer.git
 
 arch-chroot /mnt mkdir /usr/share/backgrounds
 arch-chroot /mnt cp -r /packarch_installer/config/backgrounds/packarch /usr/share/backgrounds/
@@ -129,9 +131,9 @@ echo "${green}Install yay${reset}"
 arch-chroot /mnt sh -c "cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm && cd .. && rm -rf yay"
 
 ############# Aur common packages #########################
-arch-chroot /mnt sudo -u $username yay -S --noconfirm fetchmirrors
-arch-chroot /mnt gpg --recv-keys 1C61A2656FB57B7E4DE0F4C1FC918B335044912E
-arch-chroot /mnt sudo -u $username yay -S --noconfirm dropbox
+#arch-chroot /mnt sudo -u $username yay -S --noconfirm fetchmirrors
+#arch-chroot /mnt gpg --recv-keys 1C61A2656FB57B7E4DE0F4C1FC918B335044912E
+#arch-chroot /mnt sudo -u $username yay -S --noconfirm dropbox
 #arch-chroot /mnt gpg --recv-keys 2EBF997C15BDA244B6EBF5D84773BD5E130D1D45
 #arch-chroot /mnt sudo -u $username yay -S --noconfirm spotify
 #######################################
@@ -213,11 +215,11 @@ elif [[ $desktop_setting == 3 ]]; then
   arch-chroot /mnt systemctl enable lightdm.service
 fi
 ########## VM or not ###########################
-if [[ $vm_setting == 0 ]]; then
+if [[ $vm_setting == 1 ]]; then
   echo "${green}Install packs for Virtualbox${reset}"
   arch-chroot /mnt pacman -S - < virtual_machine_pkg.txt --noconfirm
 
-elif [[ $vm_setting == 1 ]]; then
+elif [[ $vm_setting == 0 ]]; then
   echo "${green}Install packs for hardware${reset}"
   arch-chroot /mnt pacman -S - < real_install_pkg.txt --noconfirm
   arch-chroot /mnt cp -r /packarch_installer/config/20-nvidia.conf /etc/X11/xorg.conf.d/20-nvidia.conf

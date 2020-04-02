@@ -13,14 +13,11 @@ openssh
 x11-ssh-askpass
 wpa_supplicant
 wget
-veracrypt
-atom
 qpdfview
 gdb
 cups
 hplip
 xsane
-hunspell-fr
 noto-fonts
 ttf-inconsolata
 xdg-utils
@@ -33,12 +30,8 @@ p7zip
 lzop
 lrzip
 unace
-smplayer
-smplayer-skins
-smplayer-themes
 filezilla
 firefox
-firefox-i18n-fr
 git
 gvfs
 gvfs-nfs
@@ -52,7 +45,5 @@ ntfs-3g
 go
 qtcreator
 qt5-translations
-gimp
-libreoffice-fresh
-libreoffice-fresh-fr
 hwinfo
+mc
